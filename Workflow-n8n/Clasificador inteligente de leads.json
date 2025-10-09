@@ -1,0 +1,724 @@
+{
+  "name": "Clasificador inteligente de leads",
+  "nodes": [
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.0-flash-001",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        24,
+        336
+      ],
+      "id": "55f4a844-aa8d-4d60-80e0-aa7b6a7af54f",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "WVz2C3mDeLpS1KGR",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        952,
+        84
+      ],
+      "id": "cb92d52c-a157-4cf6-ab47-b19fc2dd8c14",
+      "name": "Google Gemini Chat Model1",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "WVz2C3mDeLpS1KGR",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "formTitle": "Lead",
+        "formDescription": "Quiero comprar un elemento",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Nombre",
+              "placeholder": "Nombre",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Email",
+              "fieldType": "email",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Mensaje",
+              "fieldType": "textarea",
+              "requiredField": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.3,
+      "position": [
+        -720,
+        112
+      ],
+      "id": "8fb78f77-db20-4a9b-9864-4a9c218f1550",
+      "name": "Trigger Formulario",
+      "webhookId": "3739da00-8216-4c70-9df8-30abdd3d048a"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "2a69cd28-5be3-4768-a04c-2d0333526b5a",
+              "name": "nombre",
+              "value": "={{ $json.Nombre }}",
+              "type": "string"
+            },
+            {
+              "id": "f623c947-d82c-46fe-9d82-5fa1a1736b56",
+              "name": "email",
+              "value": "={{ $json.Email }}",
+              "type": "string"
+            },
+            {
+              "id": "65e71ff0-c705-497c-8839-fb7340084ada",
+              "name": "mensaje",
+              "value": "={{ $json.Mensaje }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -496,
+        112
+      ],
+      "id": "bf0def05-666a-4b5a-ae66-c0b3ad29432e",
+      "name": "Normalizar Datos"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "29b1f117-24bf-452b-867c-3c169c3132e7",
+              "leftValue": "={{ $json.email }}",
+              "rightValue": "@platzi.com",
+              "operator": {
+                "type": "string",
+                "operation": "notContains"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.2,
+      "position": [
+        -272,
+        112
+      ],
+      "id": "b8121d7b-9850-4228-9a07-34667ca24a1a",
+      "name": "Excluir Platzi"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.mensaje }}",
+        "options": {
+          "systemMessage": "Cataloga este mensaje en una de estas opciones: info, demo, compra y soporte.\n\nLa respuesta tiene que ser una categoria en minuscula. a helpful assistant"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        -48,
+        112
+      ],
+      "id": "a76e17e6-2e9b-4132-a321-2056927e7954",
+      "name": "Clasificar Mensaje"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Normalizar Datos').item.json.email }}",
+        "subject": "Le atenderemos lo antes posible",
+        "message": "=<!DOCTYPE html>\n<html>\n  <head>\n    <meta charset=\"UTF-8\">\n    <title>Bienvenido</title>\n  </head>\n  <body style=\"margin:0; padding:0; background-color:#f5f7fa; font-family: Arial, sans-serif;\">\n\n    <table width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" style=\"background-color:#f5f7fa; padding: 20px 0;\">\n      <tr>\n        <td align=\"center\">\n\n          <!-- Contenedor principal -->\n          <table width=\"600\" cellpadding=\"0\" cellspacing=\"0\" style=\"background-color: #ffffff; border-radius: 6px; overflow: hidden; box-shadow: 0 2px 6px rgba(0,0,0,0.05);\">\n            \n            <!-- Cabecera -->\n            <tr>\n              <td style=\"background-color: #007BFF; padding: 40px 30px; text-align: center; color: white;\">\n                <h1 style=\"margin: 0; font-size: 28px;\">¡Gracias por tu compra!</h1>\n                <p style=\"margin: 10px 0 0; font-size: 16px;\">Nos alegra tenerte con nosotros 🚀</p>\n              </td>\n            </tr>\n\n            <!-- Cuerpo -->\n            <tr>\n              <td style=\"padding: 30px; color: #333333; font-size: 16px; line-height: 1.6;\">\n                {{ $json.output }}\n              </td>\n            </tr>\n\n            <!-- Pie de página -->\n            <tr>\n              <td style=\"background-color: #f0f0f0; padding: 20px; text-align: center; font-size: 12px; color: #777777;\">\n                © 2025 Tu Empresa. Todos los derechos reservados.<br>\n                <a href=\"#\" style=\"color:#007BFF; text-decoration:none;\">Visítanos</a> | \n                <a href=\"#\" style=\"color:#007BFF; text-decoration:none;\">Política de privacidad</a>\n              </td>\n            </tr>\n\n          </table>\n\n        </td>\n      </tr>\n    </table>\n\n  </body>\n</html>\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        1232,
+        -36
+      ],
+      "id": "07848bbf-bf7f-48fd-88c7-0fefbcba05eb",
+      "name": "Confirmar al cliente",
+      "webhookId": "2ad40bda-ff5d-48b5-8dfc-1e1a98d1e49e",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "BKfFQyv8W6zSzmyx",
+          "name": "Gmail account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        }
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1456,
+        -36
+      ],
+      "id": "88654af9-1403-44f6-bb1b-2aefc52895b9",
+      "name": "guardar en Sheet"
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C09K5GFQJ8M",
+          "mode": "list",
+          "cachedResultName": "todo-dev-lab"
+        },
+        "text": "=Cordial saludo\n\nEquipo, Buenas noticias, tenemos un nuevo lead:\n- Email: {{ $('Normalizar Datos').item.json.email }}\n- Nombre: {{ $('Normalizar Datos').item.json.nombre }}\n- Mensaje: {{ $('Normalizar Datos').item.json.mensaje }}",
+        "otherOptions": {}
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.3,
+      "position": [
+        592,
+        -272
+      ],
+      "id": "ee98212b-884f-4803-b04f-d2ae2ea0ff6e",
+      "name": "Notificar Lead Slack",
+      "webhookId": "2cc3969f-ca54-4ce3-847b-c5d8028c830c",
+      "credentials": {
+        "slackOAuth2Api": {
+          "id": "BUXoz2xZs7QqlWbr",
+          "name": "Slack account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Normalizar Datos').item.json.email }}",
+        "subject": "=Hola  {{ $('Normalizar Datos').item.json.nombre }}\npor favor verifique este enlace para obtener mas información ",
+        "message": "Por favor verifique nuestros enlaces",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        592,
+        -80
+      ],
+      "id": "36810e92-d5a4-4f8a-93b5-878e97d552c7",
+      "name": "Enviar Info Gmail",
+      "webhookId": "2ad40bda-ff5d-48b5-8dfc-1e1a98d1e49e",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "BKfFQyv8W6zSzmyx",
+          "name": "Gmail account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "inputText": "={{ $('Normalizar Datos').item.json.mensaje }}",
+        "options": {
+          "categories": "Positive, Negative"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.sentimentAnalysis",
+      "typeVersion": 1.1,
+      "position": [
+        528,
+        112
+      ],
+      "id": "6fa0d44b-0781-47f3-9742-06ac558daa5c",
+      "name": "Analizar sentimientos"
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C09K5GFQJ8M",
+          "mode": "list",
+          "cachedResultName": "todo-dev-lab"
+        },
+        "text": "=Cordial saludo\n\nEquipo, Buenas noticias, no nos vamos  undir, nos han comprado:\n- Email: {{ $('Normalizar Datos').item.json.email }}\n- Nombre: {{ $('Normalizar Datos').item.json.nombre }}\n- Mensaje: {{ $('Normalizar Datos').item.json.mensaje }}",
+        "otherOptions": {}
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.3,
+      "position": [
+        592,
+        356
+      ],
+      "id": "6c00447c-38fb-4fd4-be28-72044db01135",
+      "name": "Notificar compra slack",
+      "webhookId": "2cc3969f-ca54-4ce3-847b-c5d8028c830c",
+      "credentials": {
+        "slackOAuth2Api": {
+          "id": "BUXoz2xZs7QqlWbr",
+          "name": "Slack account 2"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        944,
+        548
+      ],
+      "id": "02ea5fea-05b0-4730-b3d6-85ce82baa8cb",
+      "name": "esperar",
+      "webhookId": "7fa45dda-8e23-4643-91e0-1acf4d1a5916"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('Normalizar Datos').item.json.mensaje }}",
+        "options": {
+          "systemMessage": "Genera un respuesta en modo texto que solucione el problema del cliente. \nSi es genérico, pregúntale como le podemos ayudar y que de mas detalles "
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        880,
+        -140
+      ],
+      "id": "b1eda7e5-4813-4961-8ce5-eb023eb7b537",
+      "name": "Generar respuesta IA"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.output.trim() }}",
+                    "rightValue": "demo",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "bbc977c8-e30c-4f9c-a8c2-bb7bfe009748"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "demo"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "dc7a736a-d9e5-4502-b822-c042ed94f5d4",
+                    "leftValue": "={{ $json.output.trim() }}",
+                    "rightValue": "info",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "info"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "daa6a18b-8385-4e0e-abf0-988caf201618",
+                    "leftValue": "={{ $json.output.trim() }}",
+                    "rightValue": "soporte",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "soporte"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "1ae2cdda-3a09-4d5f-903e-95279667d53d",
+                    "leftValue": "={{ $json.output.trim() }}",
+                    "rightValue": "compra",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "compra"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.3,
+      "position": [
+        304,
+        80
+      ],
+      "id": "bb3e7bcb-cf1a-4024-b299-57217b475071",
+      "name": "Ruta por intencion"
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C09LB23FSQG",
+          "mode": "list",
+          "cachedResultName": "support"
+        },
+        "text": "=Cordial saludo\n\npor favor equipo, un cliente tienen problemas y esta enfadado\n- Email: {{ $('Normalizar Datos').item.json.email }}\n- Nombre: {{ $('Normalizar Datos').item.json.nombre }}\n- Mensaje: {{ $('Normalizar Datos').item.json.mensaje }}",
+        "otherOptions": {}
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.3,
+      "position": [
+        944,
+        260
+      ],
+      "id": "95a3cf8f-06c4-43cb-b776-44263e8249da",
+      "name": "Alerta soporte slack",
+      "webhookId": "2cc3969f-ca54-4ce3-847b-c5d8028c830c",
+      "credentials": {
+        "slackOAuth2Api": {
+          "id": "BUXoz2xZs7QqlWbr",
+          "name": "Slack account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Normalizar Datos').item.json.email }}",
+        "subject": "=bienvenido a nuestra empresa",
+        "message": "Hola  {{ $('Edit Fields').item.json.nombre }}  bienvenido a unestra plataforma",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        592,
+        548
+      ],
+      "id": "ea777aab-f2d3-40a0-b0af-c79fe32476c9",
+      "name": "Email bienvenida",
+      "webhookId": "2ad40bda-ff5d-48b5-8dfc-1e1a98d1e49e",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "BKfFQyv8W6zSzmyx",
+          "name": "Gmail account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C09KDEU1N2H",
+          "mode": "list",
+          "cachedResultName": "user"
+        },
+        "text": "=Hola, recuerda hacer el seguimoento de {{ $('Normalizar Datos').item.json.nombre }}\n\nEmail: {{ $('Normalizar Datos').item.json.email }}",
+        "otherOptions": {}
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.3,
+      "position": [
+        1232,
+        548
+      ],
+      "id": "e1f3d3d8-dac5-4e84-8c2f-0a48e7485ae9",
+      "name": "Recordar seguimiento",
+      "webhookId": "2cc3969f-ca54-4ce3-847b-c5d8028c830c",
+      "credentials": {
+        "slackOAuth2Api": {
+          "id": "BUXoz2xZs7QqlWbr",
+          "name": "Slack account 2"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Clasificar Mensaje",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Analizar sentimientos",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Generar respuesta IA",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Trigger Formulario": {
+      "main": [
+        [
+          {
+            "node": "Normalizar Datos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalizar Datos": {
+      "main": [
+        [
+          {
+            "node": "Excluir Platzi",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Excluir Platzi": {
+      "main": [
+        [
+          {
+            "node": "Clasificar Mensaje",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Clasificar Mensaje": {
+      "main": [
+        [
+          {
+            "node": "Ruta por intencion",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Confirmar al cliente": {
+      "main": [
+        [
+          {
+            "node": "guardar en Sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Analizar sentimientos": {
+      "main": [
+        [
+          {
+            "node": "Generar respuesta IA",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Alerta soporte slack",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "esperar": {
+      "main": [
+        [
+          {
+            "node": "Recordar seguimiento",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generar respuesta IA": {
+      "main": [
+        [
+          {
+            "node": "Confirmar al cliente",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ruta por intencion": {
+      "main": [
+        [
+          {
+            "node": "Notificar Lead Slack",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Enviar Info Gmail",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Analizar sentimientos",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Notificar compra slack",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Email bienvenida",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Email bienvenida": {
+      "main": [
+        [
+          {
+            "node": "esperar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "417c299c-90ce-4d86-b481-d70cb3f9c4ce",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "02e25bd36835db1a0430f2b04d11d47e9fb8c6cc2c80cd6cf5e8e1cef816a4d2"
+  },
+  "id": "OwwBssY0d2eEka2O",
+  "tags": [
+    {
+      "name": "Ventas",
+      "id": "UvlEc6Mhex0czeV7",
+      "createdAt": "2025-10-08T22:13:10.885Z",
+      "updatedAt": "2025-10-08T22:13:10.885Z"
+    }
+  ]
+}

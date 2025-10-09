@@ -1,0 +1,717 @@
+{
+  "name": "Mi flujo IV personalizar correo",
+  "nodes": [
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "2a69cd28-5be3-4768-a04c-2d0333526b5a",
+              "name": "nombre",
+              "value": "={{ $json.Nombre }}",
+              "type": "string"
+            },
+            {
+              "id": "f623c947-d82c-46fe-9d82-5fa1a1736b56",
+              "name": "email",
+              "value": "={{ $json.Email }}",
+              "type": "string"
+            },
+            {
+              "id": "65e71ff0-c705-497c-8839-fb7340084ada",
+              "name": "mensaje",
+              "value": "={{ $json.Mensaje }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -496,
+        112
+      ],
+      "id": "9cd927d4-12e4-41e4-8db2-8a075c46ade8",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C09K5GFQJ8M",
+          "mode": "list",
+          "cachedResultName": "todo-dev-lab"
+        },
+        "text": "=Cordial saludo\n\nEquipo, Buenas noticias, tenemos un nuevo lead:\n- Email: {{ $('Edit Fields').item.json.email }}\n- Nombre: {{ $('Edit Fields').item.json.nombre }}\n- Mensaje: {{ $('Edit Fields').item.json.mensaje }}",
+        "otherOptions": {}
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.3,
+      "position": [
+        592,
+        -272
+      ],
+      "id": "0befd4be-f805-4ea4-a07b-af0928611830",
+      "name": "Send a message",
+      "webhookId": "dbbf4b8d-5f77-41e9-a325-b1c358d15d65",
+      "credentials": {
+        "slackOAuth2Api": {
+          "id": "BUXoz2xZs7QqlWbr",
+          "name": "Slack account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Edit Fields').item.json.email }}",
+        "subject": "=Hola  {{ $('Edit Fields').item.json.nombre }}\npor favor verifique este enlace para obtener mas información ",
+        "message": "Por favor verifique nuestros enlaces",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        592,
+        -80
+      ],
+      "id": "06c5ac1e-4787-4a48-91fd-4bfc42e6e8f2",
+      "name": "Send a message1",
+      "webhookId": "08651f5a-617c-44a9-b112-17129b3af1db",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "BKfFQyv8W6zSzmyx",
+          "name": "Gmail account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "formTitle": "Lead",
+        "formDescription": "Quiero comprar un elemento",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Nombre",
+              "placeholder": "Nombre",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Email",
+              "fieldType": "email",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Mensaje",
+              "fieldType": "textarea",
+              "requiredField": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.3,
+      "position": [
+        -720,
+        112
+      ],
+      "id": "c7994d2b-b4bd-4c4f-96b0-4d3f7e1d7be4",
+      "name": "On form submission",
+      "webhookId": "42bbd3d3-3cbe-46fa-a256-9c8acfd6478f"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "29b1f117-24bf-452b-867c-3c169c3132e7",
+              "leftValue": "={{ $json.email }}",
+              "rightValue": "@platzi.com",
+              "operator": {
+                "type": "string",
+                "operation": "notContains"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.2,
+      "position": [
+        -272,
+        112
+      ],
+      "id": "e3d5aee5-49c1-4624-8d95-101cef36bd26",
+      "name": "Filter"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.mensaje }}",
+        "options": {
+          "systemMessage": "Cataloga este mensaje en una de estas opciones: info, demo, compra y soporte.\n\nLa respuesta tiene que ser una categoria en minuscula. a helpful assistant"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        -48,
+        112
+      ],
+      "id": "0e6bfccb-64c3-415d-889d-9fc4752c5022",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.0-flash-001",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        32,
+        336
+      ],
+      "id": "ddcecadf-6e27-45b7-b816-19bd413b77d8",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "WVz2C3mDeLpS1KGR",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.output.trim() }}",
+                    "rightValue": "demo",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "bbc977c8-e30c-4f9c-a8c2-bb7bfe009748"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "demo"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "dc7a736a-d9e5-4502-b822-c042ed94f5d4",
+                    "leftValue": "={{ $json.output.trim() }}",
+                    "rightValue": "info",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "info"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "daa6a18b-8385-4e0e-abf0-988caf201618",
+                    "leftValue": "={{ $json.output.trim() }}",
+                    "rightValue": "soporte",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "soporte"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "1ae2cdda-3a09-4d5f-903e-95279667d53d",
+                    "leftValue": "={{ $json.output.trim() }}",
+                    "rightValue": "compra",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "compra"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.3,
+      "position": [
+        304,
+        80
+      ],
+      "id": "6dc9e0f3-dda9-4698-9b9d-c06df4045c64",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Edit Fields').item.json.email }}",
+        "subject": "Le atenderemos lo antes posible",
+        "message": "=<!DOCTYPE html>\n<html>\n  <head>\n    <meta charset=\"UTF-8\">\n    <title>Bienvenido</title>\n  </head>\n  <body style=\"margin:0; padding:0; background-color:#f5f7fa; font-family: Arial, sans-serif;\">\n\n    <table width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" style=\"background-color:#f5f7fa; padding: 20px 0;\">\n      <tr>\n        <td align=\"center\">\n\n          <!-- Contenedor principal -->\n          <table width=\"600\" cellpadding=\"0\" cellspacing=\"0\" style=\"background-color: #ffffff; border-radius: 6px; overflow: hidden; box-shadow: 0 2px 6px rgba(0,0,0,0.05);\">\n            \n            <!-- Cabecera -->\n            <tr>\n              <td style=\"background-color: #007BFF; padding: 40px 30px; text-align: center; color: white;\">\n                <h1 style=\"margin: 0; font-size: 28px;\">¡Gracias por tu compra!</h1>\n                <p style=\"margin: 10px 0 0; font-size: 16px;\">Nos alegra tenerte con nosotros 🚀</p>\n              </td>\n            </tr>\n\n            <!-- Cuerpo -->\n            <tr>\n              <td style=\"padding: 30px; color: #333333; font-size: 16px; line-height: 1.6;\">\n                {{ $json.output }}\n              </td>\n            </tr>\n\n            <!-- Pie de página -->\n            <tr>\n              <td style=\"background-color: #f0f0f0; padding: 20px; text-align: center; font-size: 12px; color: #777777;\">\n                © 2025 Tu Empresa. Todos los derechos reservados.<br>\n                <a href=\"#\" style=\"color:#007BFF; text-decoration:none;\">Visítanos</a> | \n                <a href=\"#\" style=\"color:#007BFF; text-decoration:none;\">Política de privacidad</a>\n              </td>\n            </tr>\n\n          </table>\n\n        </td>\n      </tr>\n    </table>\n\n  </body>\n</html>\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        1232,
+        -32
+      ],
+      "id": "bdd8aea1-77a5-411d-abee-7355ff394571",
+      "name": "Send a message2",
+      "webhookId": "69843e24-8cba-47b2-ae8b-3bbe327fede3",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "BKfFQyv8W6zSzmyx",
+          "name": "Gmail account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "inputText": "={{ $('Edit Fields').item.json.mensaje }}",
+        "options": {
+          "categories": "Positive, Negative"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.sentimentAnalysis",
+      "typeVersion": 1.1,
+      "position": [
+        528,
+        112
+      ],
+      "id": "af8509e1-828f-44f5-b54a-0d09b402b9ec",
+      "name": "Sentiment Analysis"
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C09LB23FSQG",
+          "mode": "list",
+          "cachedResultName": "support"
+        },
+        "text": "=Cordial saludo\n\npor favor equipo, un cliente tienen problemas y esta enfadado\n- Email: {{ $('Edit Fields').item.json.email }}\n- Nombre: {{ $('Edit Fields').item.json.nombre }}\n- Mensaje: {{ $('Edit Fields').item.json.mensaje }}",
+        "otherOptions": {}
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.3,
+      "position": [
+        944,
+        272
+      ],
+      "id": "c9ffbad2-1d21-422a-b5ca-2aa2a02b93e9",
+      "name": "Send a message3",
+      "webhookId": "bea3e1fc-1877-404f-8072-357fa6c86ca9",
+      "credentials": {
+        "slackOAuth2Api": {
+          "id": "BUXoz2xZs7QqlWbr",
+          "name": "Slack account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C09K5GFQJ8M",
+          "mode": "list",
+          "cachedResultName": "todo-dev-lab"
+        },
+        "text": "=Cordial saludo\n\nEquipo, Buenas noticias, no nos vamos  undir, nos han comprado:\n- Email: {{ $('Edit Fields').item.json.email }}\n- Nombre: {{ $('Edit Fields').item.json.nombre }}\n- Mensaje: {{ $('Edit Fields').item.json.mensaje }}",
+        "otherOptions": {}
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.3,
+      "position": [
+        592,
+        368
+      ],
+      "id": "3e3d084c-d861-4670-9b3c-197039e58972",
+      "name": "Send a message4",
+      "webhookId": "9bba0587-f7cd-4f14-b816-113b04fab25c",
+      "credentials": {
+        "slackOAuth2Api": {
+          "id": "BUXoz2xZs7QqlWbr",
+          "name": "Slack account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Edit Fields').item.json.email }}",
+        "subject": "=bienvenido a nuestra empresa",
+        "message": "Hola  {{ $('Edit Fields').item.json.nombre }}  bienvenido a unestra plataforma",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        592,
+        560
+      ],
+      "id": "cc92f971-9450-4d8f-b9e0-6bb23a2258ea",
+      "name": "Send a message5",
+      "webhookId": "25922955-b6d4-4b90-9fc4-914bcac19126",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "BKfFQyv8W6zSzmyx",
+          "name": "Gmail account 2"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        944,
+        560
+      ],
+      "id": "fcaf181d-20f8-46e6-9097-5ca26c865fb6",
+      "name": "Wait",
+      "webhookId": "04122d68-71af-4b4f-b5ac-080fe6c561ae"
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C09KDEU1N2H",
+          "mode": "list",
+          "cachedResultName": "user"
+        },
+        "text": "=Hola, recuerda hacer el seguimoento de {{ $('Edit Fields').item.json.nombre }}\n\nEmail: {{ $('Edit Fields').item.json.email }}",
+        "otherOptions": {}
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.3,
+      "position": [
+        1232,
+        560
+      ],
+      "id": "959fa87a-f49a-480a-b5c1-2ac6da03a579",
+      "name": "Send a message6",
+      "webhookId": "9d263712-bd52-4f53-8bbf-70ca173a79bf",
+      "credentials": {
+        "slackOAuth2Api": {
+          "id": "BUXoz2xZs7QqlWbr",
+          "name": "Slack account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('Edit Fields').item.json.mensaje }}",
+        "options": {
+          "systemMessage": "Genera un respuesta en modo texto que solucione el problema del cliente. \nSi es genérico, pregúntale como le podemos ayudar y que de mas detalles "
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        880,
+        -144
+      ],
+      "id": "8f2206d3-43d4-4fb0-85f3-52c22c485ec6",
+      "name": "AI Agent1"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        960,
+        96
+      ],
+      "id": "e8be3833-c163-4396-bb92-2eed88ad63ae",
+      "name": "Google Gemini Chat Model1",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "WVz2C3mDeLpS1KGR",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        }
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1456,
+        -32
+      ],
+      "id": "74874333-6eba-4612-835d-a98bff347462",
+      "name": "Append row in sheet"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Filter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Sentiment Analysis",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send a message1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Sentiment Analysis",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send a message4",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Send a message5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sentiment Analysis": {
+      "main": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send a message3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message5": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Send a message6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent1": {
+      "main": [
+        [
+          {
+            "node": "Send a message2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message2": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "4b46c48c-6430-427d-8d29-a78d76a08633",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "02e25bd36835db1a0430f2b04d11d47e9fb8c6cc2c80cd6cf5e8e1cef816a4d2"
+  },
+  "id": "I5QJPnigs4A3GWHa",
+  "tags": []
+}
